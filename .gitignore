@@ -1,0 +1,12 @@
+# Node/Electron
+node_modules/
+dist/
+build/
+*.log
+
+# Editor
+.vscode/
+.idea/
+
+# SQLite
+*.db
