@@ -1,106 +1,128 @@
 import React from 'react';
-import { ResponsiveBar } from '@nivo/bar';
 import { ScheduledTask, TYPE_COLORS } from '../../models/ITask';
+import './ganttchart.css';
 
-const START_OF_DAY = 6; // Day starts at 6:00 AM
-
-const transformDataForNivo = (tasks: ScheduledTask[]) => {
-  const days: { [key: string]: any } = {
-    Monday: { day: 'Monday' },
-    Tuesday: { day: 'Tuesday' },
-    Wednesday: { day: 'Wednesday' },
-    Thursday: { day: 'Thursday' },
-    Friday: { day: 'Friday' },
-    Saturday: { day: 'Saturday' },
-  };
-   
-
-  tasks.sort((a, b) => a.startHour - b.startHour).forEach((task) => {
-    const dayData = days[task.day];
-    let currentCursor = dayData.lastEndHour || START_OF_DAY;
-
-    const gapDuration = task.startHour - currentCursor;
-    if (gapDuration > 0) {
-      const gapKey = `gap_${currentCursor}`;
-      dayData[gapKey] = gapDuration;
-      dayData.keys = [...(dayData.keys || []), gapKey];
-    }
-
-    const taskDuration = task.endHour - task.startHour;
-    const taskKey = `${task.type}_${task.id}`;
-    dayData[taskKey] = taskDuration;
-    dayData.keys = [...(dayData.keys || []), taskKey];
-    
-    dayData.tasks = [...(dayData.tasks || []), { ...task, key: taskKey }];
-
-    dayData.lastEndHour = task.endHour;
-  });
-
-  return Object.values(days);
-};
+const START_OF_DAY = 8; // Timeline starts at 8:00 AM
+const END_OF_DAY = 22; // Timeline ends at 22:00 (10:00 PM)
+const TOTAL_HOURS = END_OF_DAY - START_OF_DAY;
+const HOUR_WIDTH = 80; // pixels per hour
 
 const TimeGanttChart: React.FC<{ schedule: ScheduledTask[] }> = ({ schedule }) => {
-  const chartData = transformDataForNivo(schedule);
-  const allKeys = chartData.flatMap(d => d.keys || []).filter((value, index, self) => self.indexOf(value) === index);
-  const taskKeys = allKeys.filter(key => !key.startsWith('gap_'));
-  const getColor = (bar: any) => {
-    if (bar.id.startsWith('gap_')) {
-      return 'transparent'; 
+  // Group tasks by day
+  const tasksByDay: { [key: string]: ScheduledTask[] } = {};
+  
+  schedule.forEach(task => {
+    if (!tasksByDay[task.day]) {
+      tasksByDay[task.day] = [];
     }
-    const taskType = bar.id.split('_')[0]; 
-    return TYPE_COLORS[taskType] || '#CCCCCC';
+    tasksByDay[task.day].push(task);
+  });
+
+  // Sort tasks by start time within each day
+  Object.keys(tasksByDay).forEach(day => {
+    tasksByDay[day].sort((a, b) => a.startHour - b.startHour);
+  });
+
+  const calculateTaskPosition = (startHour: number) => {
+    const offsetHours = Math.max(0, startHour - START_OF_DAY);
+    return offsetHours * HOUR_WIDTH;
+  };
+
+  const calculateTaskWidth = (startHour: number, endHour: number) => {
+    const duration = endHour - startHour;
+    return Math.max(duration * HOUR_WIDTH, 100); // minimum width of 100px
+  };
+
+  const formatTime = (hour: number) => {
+    const h = Math.floor(hour);
+    const m = (hour % 1) * 60;
+    return `${String(h).padStart(2, '0')}:${String(Math.round(m)).padStart(2, '0')}`;
   };
 
   return (
-    <ResponsiveBar
-      data={chartData}
-      keys={allKeys} 
-      indexBy="day"
-      layout="horizontal"
-      margin={{ top: 30, right: 30, bottom: 50, left: 80 }}
-      padding={0.1}
-      groupMode="stacked"
-      valueScale={{ type: 'linear', min: 0, max: 14 }} 
-      colors={getColor} 
-      borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+    <div className="gantt-container">
+      <h2>Horizontal Gantt Chart - Weekly Timeline</h2>
       
-      axisBottom={{
-          tickSize: 5,
-          tickPadding: 5,
-          tickRotation: 0,
-          legend: 'Time of Day',
-          legendPosition: 'middle',
-          legendOffset: 32,
-          tickValues: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-          format: (v) => `${v + START_OF_DAY}:00`, 
-      }}
-      
-      axisLeft={{
-          tickSize: 0,
-          tickPadding: 10,
-          legend: 'Day',
-          legendPosition: 'middle',
-          legendOffset: -60,
-      }}
-      enableLabel={false} 
-      tooltip={({ id, value, color, data }) => {
-        const taskData = data.tasks.find((t: any) => t.key === id);
-        
-        if (taskData) {
-            return (
-                <div style={{ backgroundColor: 'white', padding: '10px', borderLeft: `5px solid ${color}` }}>
-                    <strong>{taskData.taskName}</strong>
-                    <br />Type: {taskData.type}
-                    <br />Time: {taskData.startHour}:00 - {taskData.endHour}:00
-                    {taskData.lambdaMultiplier > 1 && (
-                      <div style={{ color: 'red' }}>⚠️ **Grown Task (λx{taskData.lambdaMultiplier.toFixed(1)})**</div>
-                    )}
+      {/* Legend */}
+      <div className="gantt-legend">
+        {Object.entries(TYPE_COLORS).map(([type, color]) => (
+          <div key={type} className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: color }}></div>
+            <span>{type}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Timeline Container */}
+      <div className="gantt-wrapper">
+        {/* Time Header */}
+        <div className="gantt-header">
+          <div className="gantt-day-label">Day</div>
+          <div className="gantt-timeline">
+            {Array.from({ length: TOTAL_HOURS + 1 }).map((_, i) => {
+              const hour = START_OF_DAY + i;
+              return (
+                <div key={`time-${hour}`} className="gantt-hour" style={{ width: `${HOUR_WIDTH}px` }}>
+                  {hour.toString().padStart(2, '0')}:00
                 </div>
-            );
-        }
-        return null;
-      }}
-    />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Days and Tasks */}
+        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+          <div key={day} className="gantt-row">
+            <div className="gantt-day-label">{day}</div>
+            <div 
+              className="gantt-tasks-container" 
+              style={{ width: `${TOTAL_HOURS * HOUR_WIDTH}px` }}
+            >
+              {tasksByDay[day]?.map((task, idx) => {
+                const left = calculateTaskPosition(task.startHour);
+                const width = calculateTaskWidth(task.startHour, task.endHour);
+                const bgColor = TYPE_COLORS[task.type] || '#CCCCCC';
+
+                return (
+                  <div
+                    key={`task-${task.id}-${idx}`}
+                    className="gantt-task"
+                    style={{
+                      left: `${left}px`,
+                      width: `${width}px`,
+                      backgroundColor: bgColor,
+                    }}
+                    title={`${task.taskName} (${formatTime(task.startHour)} - ${formatTime(task.endHour)})`}
+                  >
+                    <span className="task-label">{task.taskName}</span>
+                    <span className="task-badge">⭕</span>
+                    
+                    {/* Tooltip */}
+                    <div className="gantt-tooltip">
+                      <strong>{task.taskName}</strong>
+                      <br />
+                      <span>Type: {task.type}</span>
+                      <br />
+                      <span>Time: {formatTime(task.startHour)} - {formatTime(task.endHour)}</span>
+                      <br />
+                      <span>Duration: {(task.endHour - task.startHour).toFixed(1)}h</span>
+                      {task.lambdaMultiplier && task.lambdaMultiplier > 1 && (
+                        <>
+                          <br />
+                          <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>
+                            ⚠️ Grown Task (λx{task.lambdaMultiplier.toFixed(1)})
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

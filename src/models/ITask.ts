@@ -11,7 +11,7 @@ export interface ITask {
 
 export interface ScheduledTask {
   id: string;
-  day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+  day: 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
   taskName: string;
   type: 'Academic' | 'DSA' | 'Chore' | 'Rest' | string;
   startHour: number; 
@@ -27,7 +27,7 @@ export const TYPE_COLORS: { [key: string]: string } = {
 };
 
 export const MOCK_SCHEDULE: ScheduledTask[] = [
-  { id: '1', day: 'Monday', taskName: 'Lecture: OS', type: 'Academic', startHour: 9.0, endHour: 10.5, lambdaMultiplier: 1.0 }, 
+  { id: '1', day: 'Sunday', taskName: 'Lecture: OS', type: 'Academic', startHour: 9.0, endHour: 10.5, lambdaMultiplier: 1.0 }, 
   { id: '2', day: 'Monday', taskName: 'DSA Practice', type: 'DSA', startHour: 11.0, endHour: 12.0, lambdaMultiplier: 1.5 },
   { id: '3', day: 'Tuesday', taskName: 'Quick Rest', type: 'Rest', startHour: 14.0, endHour: 14.5, lambdaMultiplier: 1.0 }, 
   { id: '4', day: 'Wednesday', taskName: 'Project Work', type: 'Academic', startHour: 15.0, endHour: 17.0, lambdaMultiplier: 1.0 },

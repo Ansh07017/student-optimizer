@@ -23,7 +23,6 @@ export const TYPE_COLORS: { [key: string]: string } = {
   DSA: '#65CDC9',       
   Chore: '#E8E652',     
   Rest: '#8DCE4F',      
-  
 };
 
 

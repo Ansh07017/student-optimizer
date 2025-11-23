@@ -9,8 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { WeeklyProgress, ProgressChartProps, COLORS } from '../../models/IProgress';
-
+import { ProgressChartProps, COLORS } from '../../models/IProgress';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

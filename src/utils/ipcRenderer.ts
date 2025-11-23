@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { ipcRenderer } from 'electron';
 
 // Secure wrapper for renderer-main communication
 export const sendToMain = (channel: string, data?: any) => {
