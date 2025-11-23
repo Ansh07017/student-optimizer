@@ -1,4 +1,5 @@
-// Includes fields for Cognitive Load, Frequency, Duration, Load Multiplier (λ)
+// src/models/ITask.ts - Task models for the presentation tier
+
 export interface ITask {
   id: string;
   name: string;
@@ -23,13 +24,11 @@ export const TYPE_COLORS: { [key: string]: string } = {
   DSA: '#65CDC9',       
   Chore: '#E8E652',     
   Rest: '#8DCE4F',      
-  
 };
-
 
 export const MOCK_SCHEDULE: ScheduledTask[] = [
   { id: '1', day: 'Monday', taskName: 'Lecture: OS', type: 'Academic', startHour: 9.0, endHour: 10.5, lambdaMultiplier: 1.0 }, 
-  { id: '2', day: 'Monday', taskName: 'DSA Practice', type: 'DSA', startHour: 11.0, endHour: 12.0, lambdaMultiplier: 1.5 }, // Example of high lambda
+  { id: '2', day: 'Monday', taskName: 'DSA Practice', type: 'DSA', startHour: 11.0, endHour: 12.0, lambdaMultiplier: 1.5 },
   { id: '3', day: 'Tuesday', taskName: 'Quick Rest', type: 'Rest', startHour: 14.0, endHour: 14.5, lambdaMultiplier: 1.0 }, 
   { id: '4', day: 'Wednesday', taskName: 'Project Work', type: 'Academic', startHour: 15.0, endHour: 17.0, lambdaMultiplier: 1.0 },
   { id: '5', day: 'Wednesday', taskName: 'Clean Room', type: 'Chore', startHour: 17.0, endHour: 18.0, lambdaMultiplier: 1.0 },
