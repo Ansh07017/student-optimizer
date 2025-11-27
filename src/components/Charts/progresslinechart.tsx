@@ -54,7 +54,7 @@ const ProgressLineChart: React.FC<ProgressChartProps> = ({ progressData, current
             orientation="left" 
             stroke={COLORS.COMPLETION_RATE} 
             domain={[0, 100]} 
-            tickFormatter={(value) => `${value}%`}
+            tickFormatter={(value: number) => `${value}%`}
           />
           
           {/* Right Y Axis: Cognitive Load */}
